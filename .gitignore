@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+.env/
+.venv/
+
+# Environment Variables
+.env
+.env.local
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# FastAPI / Uvicorn
+*.pid
+
+# Python Build Files
+build/
+dist/
+*.egg-info/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# SQLite Database
+*.db
+*.sqlite3
+
+# Ollama / Model Cache (optional)
+models/
+ollama_models/
+
+# Temporary Files
+tmp/
+temp/
+
+# Node Modules (if frontend added later)
+node_modules/
+
+# React Build (future frontend)
+frontend/build/
+frontend/dist/
+
+# Mac/Linux hidden files
+.*.swp

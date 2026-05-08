@@ -3,30 +3,31 @@ import json
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
-PROMPT_TEMPLATE = """
-You are a strict JSON generator.
+def parse_input(text):
 
-Return ONLY JSON. No explanation.
+    prompt = f"""
+You are an AI infrastructure parser.
+
+Extract structured requirements from the text.
+
+Return ONLY valid JSON.
 
 Format:
 {{
-  "model_size": "...",
-  "users": number,
-  "latency": number,
-  "budget": number,
-  "gpu": true/false,
-  "inference_type": "real-time" or "batch"
+    "model_size": "string",
+    "users": number,
+    "latency": number,
+    "budget": number,
+    "gpu": true,
+    "inference_type": "real-time"
 }}
 
 Text:
-{input}
+{text}
 """
 
-def parse_input(text: str):
-
-    prompt = PROMPT_TEMPLATE.format(input=text)
-
     try:
+
         response = requests.post(
             OLLAMA_URL,
             json={
@@ -34,7 +35,8 @@ def parse_input(text: str):
                 "prompt": prompt,
                 "stream": False,
                 "options": {
-                    "temperature": 0
+                    "temperature": 0,
+                    "num_predict": 150
                 }
             }
         )
@@ -42,18 +44,18 @@ def parse_input(text: str):
         result = response.json()["response"]
 
         parsed = json.loads(result)
+
         return parsed
 
     except Exception as e:
-        return fallback_parser(text)
 
+        print("Parser Error:", e)
 
-def fallback_parser(text):
-    return {
-        "model_size": "unknown",
-        "users": 100,
-        "latency": 200,
-        "budget": 100,
-        "gpu": "gpu" in text.lower(),
-        "inference_type": "real-time"
-    }
+        return {
+            "model_size": "unknown",
+            "users": 100,
+            "latency": 100,
+            "budget": 100,
+            "gpu": False,
+            "inference_type": "real-time"
+        }

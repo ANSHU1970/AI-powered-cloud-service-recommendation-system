@@ -1,36 +1,42 @@
 from fastapi import APIRouter
+
 from app.models.schema import UserInput
 from app.services.parser import parse_input
-from app.services.scorer import score_services
-from app.services.cost import estimate_cost
-from app.services.explainer import generate_explanation
+from app.services.recommender import recommend_services
 
 router = APIRouter()
+
 
 @router.post("/recommend")
 def recommend(data: UserInput):
 
-    parsed = parse_input(data.text)
+    # Structured input mode
+    if data.model_size or data.users or data.budget:
 
-    scores = score_services(parsed)
+        print("Using structured input")
 
-    results = []
-    for service, score in scores.items():
-        cost = estimate_cost(service, parsed)
+        parsed = {
+            "model_size": data.model_size,
+            "users": data.users,
+            "latency": data.latency,
+            "budget": data.budget,
+            "gpu": data.gpu,
+            "inference_type": data.inference_type
+        }
 
-        results.append({
-            "service": service,
-            "score": score,
-            "estimated_cost": cost
-        })
+    # Natural language mode
+    else:
 
-    results = sorted(results, key=lambda x: x["score"], reverse=True)[:3]
+        print("Using LLaMA parser")
 
-    # Add explanations
-    # for r in results:
-    #     r["explanation"] = generate_explanation(r["service"], parsed)
+        parsed = parse_input(data.text)
+
+    recommendations = recommend_services(
+        data.text if data.text else str(parsed),
+        parsed
+    )
 
     return {
         "parsed_input": parsed,
-        "recommendations": results
+        "recommendations": recommendations
     }

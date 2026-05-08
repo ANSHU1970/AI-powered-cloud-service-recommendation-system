@@ -1,30 +1,36 @@
-from app.utils.aws_data import SERVICES
+def calculate_score(service, parsed, vector_rank):
 
-def score_services(parsed):
+    score = 0
 
-    scores = {}
+    # Vector search influence
+    score += (10 - vector_rank) * 10
 
-    for service, config in SERVICES.items():
-        score = 0
+    # GPU preference
+    if parsed.get("gpu") and service["gpu"]:
+        score += 30
 
-        # GPU
-        if parsed["gpu"] and config["gpu"]:
-            score += 30
+    # Budget scoring
+    if parsed.get("budget"):
 
-        # Budget
-        if parsed["budget"] >= config["cost"]:
-            score += 25
+        budget_score = max(
+            0,
+            1 - (service["cost"] / parsed["budget"])
+        )
 
-        # Latency
-        if parsed["latency"] >= config["latency"]:
-            score += 20
+        score += budget_score * 25
 
-        # Scalability
-        score += config["scalability"]
+    # Latency scoring
+    if parsed.get("latency"):
 
-        # Ease
-        score += config["ease"]
+        latency_score = max(
+            0,
+            1 - (service["latency"] / parsed["latency"])
+        )
 
-        scores[service] = score
+        score += latency_score * 20
 
-    return scores
+    # Managed services bonus
+    if service["managed"]:
+        score += 10
+
+    return round(score, 2)
